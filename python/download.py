@@ -1,11 +1,15 @@
-from ffiec_data_collector import FFIECDownloader
+from ffiec_data_collector import FFIECDownloader, Product, FileFormat
 
 
 def download_call_report():
 
     downloader = FFIECDownloader()
 
-    result = downloader.download_cdr_single_period("20240331")
+    result = downloader.download(
+        product=Product.CALL_SINGLE,
+        period="20240331",
+        format=FileFormat.TSV
+    )
 
     if result.success:
         print("Download successful!")
