@@ -1,10 +1,22 @@
 # FFIEC-CALL-REPORT-WAREHOUSE
+## Setup
 
-PostgreSQL is used inside Docker 29.3.0-1
-user: furwil
-pass: 1234
+### 1. Clone the repository
 
-Python libraries:
-pip install ffiec-data-collector
-pip install "psycopg[binary]"
-pip install python-dotenv
+git clone <repository-url>
+
+### 2. Create environment file
+
+cp .env.example .env
+
+### 3. Start PostgreSQL
+
+docker compose up -d
+
+### 4. Install Python dependencies
+
+pip install -r requirements.txt
+
+### 5. Run the ingestion pipeline
+
+python python/download.py

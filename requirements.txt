@@ -1,0 +1,3 @@
+ffiec-data-collector
+psycopg[binary]
+python-dotenv
