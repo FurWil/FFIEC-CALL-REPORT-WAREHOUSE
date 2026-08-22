@@ -6,3 +6,4 @@ pass: 1234
 
 Python libraries:
 pip install ffiec-data-collector
+pip install "psycopg[binary]"
