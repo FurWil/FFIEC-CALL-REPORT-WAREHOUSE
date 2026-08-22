@@ -9,7 +9,9 @@ zip_file = Path(
 output_folder = Path("data/raw")
 
 
-file_to_extract = "FFIEC CDR Call Schedule RC 03312024.txt"
+#file_to_extract = "FFIEC CDR Call Schedule RC 03312024.txt"
+#file_to_extract = "FFIEC CDR Call Bulk POR 03312024.txt"
+file_to_extract = "FFIEC CDR Call Schedule RI 03312024.txt"
 
 
 with zipfile.ZipFile(zip_file, "r") as zip_ref:
