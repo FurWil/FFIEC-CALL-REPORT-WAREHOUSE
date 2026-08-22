@@ -1,3 +1,5 @@
 ffiec-data-collector
+pandas as pd
 psycopg[binary]
 python-dotenv
+sqlalchemy
