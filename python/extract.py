@@ -62,8 +62,8 @@ def extract_call_report(reporting_period: str) -> None:
             destination = output_folder / file_name
 
             if destination.exists():
-            print(f"Already extracted: {file_name}")
-            continue
+                print(f"Already extracted: {file_name}")
+                continue
 
             zip_ref.extract(
                 file_name,
