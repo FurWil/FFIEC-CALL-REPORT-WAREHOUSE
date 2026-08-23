@@ -48,9 +48,11 @@ def download_call_report(reporting_period: str) -> Path:
     destination = output_folder / (
         f"FFIEC CDR Call Bulk All Schedules {date_for_filename}.zip"
     )
-
-    downloaded_file.replace(destination)
-
-    print(f"Download successful: {destination}")
+    if destination.exists():
+        print(f"FFIEC ZIP already exists: {destination}")
+        return destination
+    else:
+        downloaded_file.replace(destination)
+        print(f"Download successful: {destination}")
 
     return destination

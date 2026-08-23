@@ -9,103 +9,86 @@ The pipeline downloads, extracts, and loads FFIEC Call Report data
 into PostgreSQL, then uses dbt to transform the raw data into an
 analytical fact table.
 
-## Scope
+### Scope
 
-The project uses the four 2024 quarterly reporting periods:
+The ingestion pipeline is parameterized by reporting period and
+automatically loads a rolling four-quarter window ending on the
+quarter supplied by the user.
 
-- March 31, 2024
-- June 30, 2024
+For example:
+
+    python python/pipeline.py 2025-06-30
+
+loads the following reporting periods:
+
 - September 30, 2024
 - December 31, 2024
+- March 31, 2025
+- June 30, 2025
 
-The project focuses on three FFIEC schedules:
+This rolling four-quarter design supports longitudinal analysis while
+keeping the demonstration dataset intentionally small enough to
+reproduce locally.
 
-- POR — institution information
+The project currently focuses on three Call Report sources:
+
+- POR — Panel of Reporters / institution information
 - RC — balance sheet
 - RI — income statement
 
-This scope was chosen to demonstrate a complete ingestion,
-transformation, and analytical workflow without loading every
-available Call Report schedule.
-
-## Architecture
-
-FFIEC CDR
-    ↓
-Python ingestion
-    ↓
-PostgreSQL raw schema
-    ↓
-dbt staging models
-    ↓
-fct_bank_financials
-    ↓
-SQL analysis
-
-## Technology
-
-- Python
-- pandas
-- PostgreSQL
-- Docker
-- dbt
-- SQL
-- GitHub
-
-## Warehouse Grain
-
-The primary analytical fact table has one row per:
-
-bank_id + report_date
-
-This allows multiple reporting periods for the same financial
-institution.
-
-## Raw Layer
-
-The Python pipeline loads:
-
-- raw.rc
-- raw.por
-- raw.ri
-
-Each table contains a report_date column.
-
-## dbt Layer
-
-dbt creates:
-
-- stg_rc
-- stg_por
-- stg_ri
-- fct_bank_financials
-
-The fact model combines institution information, balance-sheet
-information, and income-statement information.
-
 ## Reproducing the Pipeline
 
-Create the local environment file:
+### 1. Clone the repository
+
+    git clone <repository-url>
+
+### 2. Configure environment variables
 
     cp .env.example .env
 
-Start PostgreSQL:
+Update the PostgreSQL credentials in `.env`.
+
+### 3. Start PostgreSQL
 
     docker compose up -d
 
-Install Python dependencies:
+### 4. Install Python dependencies
 
     pip install -r requirements.txt
 
-Run ingestion for a reporting period:
+### 5. Load a four-quarter reporting window
 
-    python python/pipeline.py 2024-09-30
+Supply the ending Call Report quarter-end date:
 
-Run dbt:
+    python python/pipeline.py 2025-06-30
+
+The pipeline automatically calculates the three preceding quarterly
+reporting periods.
+
+The accepted reporting dates are:
+
+- March 31
+- June 30
+- September 30
+- December 31
+
+### 6. Run dbt
 
     cd dbt
     dbt run
     dbt test
+
+The dbt layer transforms the raw FFIEC data into the analytical
+`fct_bank_financials` model.
+
+## Idempotent Ingestion
+
+The ingestion pipeline checks whether each reporting period has
+already been loaded into the raw PostgreSQL tables.
+
+If a period is already present, the corresponding download and load
+steps are skipped, preventing duplicate records when the pipeline is
+rerun.
 
 ## Analysis
 

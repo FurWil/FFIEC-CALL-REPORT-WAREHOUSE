@@ -6,9 +6,16 @@ SELECT
     total_liabilities,
     total_equity,
     net_income
-FROM analytics.fct_bank_financials
-WHERE report_date = DATE '2024-12-31'
-  AND total_assets IS NOT NULL
-ORDER BY total_assets DESC
-LIMIT 25;
 
+FROM analytics.fct_bank_financials
+
+WHERE report_date = (
+    SELECT MAX(report_date)
+    FROM analytics.fct_bank_financials
+)
+
+  AND total_assets IS NOT NULL
+
+ORDER BY total_assets DESC
+
+LIMIT 25;
