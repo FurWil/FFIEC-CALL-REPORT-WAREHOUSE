@@ -1,0 +1,27 @@
+version: 2
+
+models:
+  - name: bank_financials_20240331
+    description: "Bank financial metrics for the March 31, 2024 Call Report."
+
+    columns:
+      - name: bank_id
+        description: "FFIEC RSSD identifier for the financial institution."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: bank_name
+        description: "Financial institution name."
+
+      - name: total_assets
+        description: "Total assets reported by the institution."
+
+      - name: total_liabilities
+        description: "Total liabilities reported by the institution."
+
+      - name: total_equity
+        description: "Total equity capital reported by the institution."
+
+      - name: net_income
+        description: "Net income reported by the institution."

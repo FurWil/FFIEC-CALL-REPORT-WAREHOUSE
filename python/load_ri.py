@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from datetime import datetime
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -9,8 +10,26 @@ from sqlalchemy import create_engine, text
 load_dotenv()
 
 
+REPORTING_PERIOD = "20241231"
+
+date_for_filename = datetime.strptime(
+    REPORTING_PERIOD,
+    "%Y%m%d"
+).strftime("%m%d%Y")
+
+year = REPORTING_PERIOD[:4]
+month = REPORTING_PERIOD[4:6]
+
+quarter = {
+    "03": "Q1",
+    "06": "Q2",
+    "09": "Q3",
+    "12": "Q4",
+}[month]
+
 file_path = Path(
-    "data/raw/FFIEC CDR Call Schedule RI 03312024.txt"
+    f"data/raw/{year}/{quarter}/"
+    f"FFIEC CDR Call Schedule RI {date_for_filename}.txt"
 )
 
 
@@ -23,12 +42,9 @@ database_url = (
     f"{os.getenv('POSTGRES_DB')}"
 )
 
-
 engine = create_engine(database_url)
 
-
-print("Reading FFIEC RI data...")
-
+print(f"Reading RI data for {REPORTING_PERIOD}...")
 
 df = pd.read_csv(
     file_path,
@@ -39,34 +55,32 @@ df = pd.read_csv(
     na_filter=False
 )
 
-
 df.columns = [
     column.strip().lower()
     for column in df.columns
 ]
 
+df["report_date"] = pd.to_datetime(
+    REPORTING_PERIOD,
+    format="%Y%m%d"
+)
 
 print(f"Rows loaded into pandas: {len(df):,}")
 print(f"Columns loaded into pandas: {len(df.columns):,}")
-
 
 with engine.begin() as connection:
     connection.execute(
         text("CREATE SCHEMA IF NOT EXISTS raw")
     )
 
-
 print("Loading RI data into PostgreSQL...")
 
-
 df.to_sql(
-    name="ri_20240331",
+    name="ri",
     con=engine,
     schema="raw",
-    if_exists="replace",
+    if_exists="append",
     index=False
 )
 
-
-print("Successfully loaded FFIEC RI data!")
-print("PostgreSQL table: raw.ri_20240331")
+print(f"Successfully loaded raw.ri for {REPORTING_PERIOD}!")

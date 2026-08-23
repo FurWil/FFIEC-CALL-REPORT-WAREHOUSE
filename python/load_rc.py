@@ -1,22 +1,37 @@
 import os
 from pathlib import Path
+from datetime import datetime
 
 import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 
 
-# Load our database settings from .env
 load_dotenv()
 
+REPORTING_PERIOD = "20241231"
 
-# Location of the FFIEC RC file
+date_for_filename = datetime.strptime(
+    REPORTING_PERIOD,
+    "%Y%m%d"
+).strftime("%m%d%Y")
+
+year = REPORTING_PERIOD[:4]
+month = REPORTING_PERIOD[4:6]
+
+quarter = {
+    "03": "Q1",
+    "06": "Q2",
+    "09": "Q3",
+    "12": "Q4",
+}[month]
+
 file_path = Path(
-    "data/raw/FFIEC CDR Call Schedule RC 03312024.txt"
+    f"data/raw/{year}/{quarter}/"
+    f"FFIEC CDR Call Schedule RC {date_for_filename}.txt"
 )
 
 
-# Build the PostgreSQL connection string
 database_url = (
     f"postgresql+psycopg://"
     f"{os.getenv('POSTGRES_USER')}:"
@@ -26,20 +41,10 @@ database_url = (
     f"{os.getenv('POSTGRES_DB')}"
 )
 
-
-# Create a connection to PostgreSQL
 engine = create_engine(database_url)
 
+print(f"Reading RC data for {REPORTING_PERIOD}...")
 
-print("Reading FFIEC data...")
-
-# Read the FFIEC file.
-#
-# Row 1 = FFIEC field codes
-# Row 2 = human-readable descriptions
-# Row 3 onward = actual bank data
-#
-# We want row 1 as our column names and skip row 2.
 df = pd.read_csv(
     file_path,
     sep="\t",
@@ -49,33 +54,33 @@ df = pd.read_csv(
     na_filter=False
 )
 
+df.columns = [
+    column.strip().lower()
+    for column in df.columns
+]
 
-# Clean up column names slightly
-df.columns = [column.strip().lower() for column in df.columns]
-
+# Add the reporting period to every row
+df["report_date"] = pd.to_datetime(
+    REPORTING_PERIOD,
+    format="%Y%m%d"
+)
 
 print(f"Rows loaded into pandas: {len(df):,}")
 print(f"Columns loaded into pandas: {len(df.columns):,}")
 
-
-# Create the raw schema if it doesn't exist
 with engine.begin() as connection:
     connection.execute(
         text("CREATE SCHEMA IF NOT EXISTS raw")
     )
 
+print("Loading RC data into PostgreSQL...")
 
-print("Loading data into PostgreSQL...")
-
-# Load the data into PostgreSQL
 df.to_sql(
-    name="rc_20240331",
+    name="rc",
     con=engine,
     schema="raw",
-    if_exists="replace",
+    if_exists="append",
     index=False
 )
 
-
-print("Successfully loaded FFIEC RC data!")
-print("PostgreSQL table: raw.rc_20240331")
+print(f"Successfully loaded raw.rc for {REPORTING_PERIOD}!")

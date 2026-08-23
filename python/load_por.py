@@ -1,22 +1,38 @@
 import os
 from pathlib import Path
+from datetime import datetime
 
 import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 
 
-# Load database settings from .env
 load_dotenv()
 
+REPORTING_PERIOD = "20241231"
 
-# Location of the POR file
+
+date_for_filename = datetime.strptime(
+    REPORTING_PERIOD,
+    "%Y%m%d"
+).strftime("%m%d%Y")
+
+year = REPORTING_PERIOD[:4]
+month = REPORTING_PERIOD[4:6]
+
+quarter = {
+    "03": "Q1",
+    "06": "Q2",
+    "09": "Q3",
+    "12": "Q4",
+}[month]
+
 file_path = Path(
-    "data/raw/FFIEC CDR Call Bulk POR 03312024.txt"
+    f"data/raw/{year}/{quarter}/"
+    f"FFIEC CDR Call Bulk POR {date_for_filename}.txt"
 )
 
 
-# Build PostgreSQL connection string
 database_url = (
     f"postgresql+psycopg://"
     f"{os.getenv('POSTGRES_USER')}:"
@@ -26,15 +42,10 @@ database_url = (
     f"{os.getenv('POSTGRES_DB')}"
 )
 
-
-# Connect to PostgreSQL
 engine = create_engine(database_url)
 
+print(f"Reading POR data for {REPORTING_PERIOD}...")
 
-print("Reading FFIEC POR data...")
-
-
-# POR has column names in the first row
 df = pd.read_csv(
     file_path,
     sep="\t",
@@ -43,8 +54,6 @@ df = pd.read_csv(
     na_filter=False
 )
 
-
-# Clean up the column names
 df.columns = [
     column.strip()
     .lower()
@@ -53,30 +62,27 @@ df.columns = [
     for column in df.columns
 ]
 
+df["report_date"] = pd.to_datetime(
+    REPORTING_PERIOD,
+    format="%Y%m%d"
+)
 
 print(f"Rows loaded into pandas: {len(df):,}")
 print(f"Columns loaded into pandas: {len(df.columns):,}")
 
-
-# Make sure the raw schema exists
 with engine.begin() as connection:
     connection.execute(
         text("CREATE SCHEMA IF NOT EXISTS raw")
     )
 
-
 print("Loading POR data into PostgreSQL...")
 
-
-# Create/replace the PostgreSQL table
 df.to_sql(
-    name="por_20240331",
+    name="por",
     con=engine,
     schema="raw",
-    if_exists="replace",
+    if_exists="append",
     index=False
 )
 
-
-print("Successfully loaded FFIEC POR data!")
-print("PostgreSQL table: raw.por_20240331")
+print(f"Successfully loaded raw.por for {REPORTING_PERIOD}!")

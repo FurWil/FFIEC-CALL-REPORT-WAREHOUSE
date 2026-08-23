@@ -1,13 +1,16 @@
 from ffiec_data_collector import FFIECDownloader, Product, FileFormat
 
 
+REPORTING_PERIOD = "20241231"
+
+
 def download_call_report():
 
     downloader = FFIECDownloader()
 
     result = downloader.download(
         product=Product.CALL_SINGLE,
-        period="20240331",
+        period=REPORTING_PERIOD,
         format=FileFormat.TSV
     )
 
