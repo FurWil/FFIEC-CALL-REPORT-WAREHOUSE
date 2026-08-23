@@ -280,7 +280,7 @@ ERROR=0
 
 ---
 
-## 7. Running the Analysis
+## 6.7. Running the Analysis
 
 The SQL files under:
 
@@ -339,7 +339,7 @@ This analysis:
 2. Selects those same five institutions.
 3. Follows them across the latest four reporting periods.
 4. Calculates asset growth and equity growth.
-5. Reports net income and ROA.
+
 
 The output contains:
 
@@ -351,7 +351,6 @@ asset_growth_pct
 total_equity
 equity_growth_pct
 net_income
-roa
 asset_change
 ```
 
@@ -547,10 +546,9 @@ The warehouse can answer questions such as:
 * Which institutions have the largest balance sheets?
 * Which banks experienced the largest recent asset growth?
 * How has bank equity changed across reporting periods?
-* Which institutions have the highest ROA?
 * How have aggregate bank assets changed over time?
 * How have the largest institutions changed across the latest four quarters?
-* Which institutions increased assets while maintaining or improving ROA?
+
 
 ---
 

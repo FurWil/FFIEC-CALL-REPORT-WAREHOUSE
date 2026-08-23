@@ -13,9 +13,7 @@ SELECT
     rc.total_liabilities,
     rc.total_equity,
 
-    ri.net_income,
-
-    ri.net_income / NULLIF(rc.total_assets, 0) AS roa
+    ri.net_income
 
 FROM {{ ref('stg_rc') }} AS rc
 

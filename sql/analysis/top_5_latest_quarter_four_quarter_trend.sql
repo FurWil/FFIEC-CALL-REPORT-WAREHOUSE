@@ -42,8 +42,7 @@ metrics AS (
         f.total_assets,
         f.total_equity,
         f.net_income,
-        f.roa
-
+        
     FROM bank_quarters AS bq
 
     LEFT JOIN analytics.fct_bank_financials AS f
@@ -72,24 +71,11 @@ SELECT
     bank_name,
     report_date,
     total_assets,
-
-    (
-        total_assets - prior_total_assets
-    ) / NULLIF(prior_total_assets, 0)
-        AS asset_growth_pct,
-
+    asset_growth_pct,
     total_equity,
-
-    (
-        total_equity - prior_total_equity
-    ) / NULLIF(prior_total_equity, 0)
-        AS equity_growth_pct,
-
+    equity_growth_pct,
     net_income,
-    roa,
-
-    total_assets - prior_total_assets
-        AS asset_change
+    asset_change
 
 FROM with_changes
 

@@ -1,27 +1,46 @@
 version: 2
 
 models:
-  - name: bank_financials_20240331
-    description: "Bank financial metrics for the March 31, 2024 Call Report."
+  - name: fct_bank_financials
+    description: "One row per financial institution per Call Report reporting period."
 
     columns:
       - name: bank_id
         description: "FFIEC RSSD identifier for the financial institution."
         data_tests:
           - not_null
-          - unique
+
+      - name: report_date
+        description: "Call Report reporting period end date."
+        data_tests:
+          - not_null
 
       - name: bank_name
         description: "Financial institution name."
 
+      - name: fdic_certificate
+        description: "FDIC certificate number for the financial institution."
+
+      - name: address
+        description: "Financial institution address."
+
+      - name: city
+        description: "Financial institution city."
+
+      - name: state
+        description: "Financial institution state."
+
+      - name: zip_code
+        description: "Financial institution ZIP code."
+
       - name: total_assets
-        description: "Total assets reported by the institution."
+        description: "Total assets reported by the institution, in dollars."
 
       - name: total_liabilities
-        description: "Total liabilities reported by the institution."
+        description: "Total liabilities reported by the institution, in dollars."
 
       - name: total_equity
-        description: "Total equity capital reported by the institution."
+        description: "Total equity capital reported by the institution, in dollars."
 
       - name: net_income
-        description: "Net income reported by the institution."
+        description: "Net income reported by the institution, in dollars."
