@@ -38,13 +38,10 @@ metrics AS (
         bq.bank_id,
         bq.bank_name,
         bq.report_date,
-
         f.total_assets,
         f.total_equity,
-        f.net_income,
-        
+        f.net_income
     FROM bank_quarters AS bq
-
     LEFT JOIN analytics.fct_bank_financials AS f
         ON bq.bank_id = f.bank_id
         AND bq.report_date = f.report_date
@@ -53,17 +50,14 @@ metrics AS (
 with_changes AS (
     SELECT
         *,
-        
         LAG(total_assets) OVER (
             PARTITION BY bank_id
             ORDER BY report_date
         ) AS prior_total_assets,
-
         LAG(total_equity) OVER (
             PARTITION BY bank_id
             ORDER BY report_date
         ) AS prior_total_equity
-
     FROM metrics
 )
 
@@ -71,11 +65,23 @@ SELECT
     bank_name,
     report_date,
     total_assets,
-    asset_growth_pct,
+
+    (
+        total_assets - prior_total_assets
+    ) / NULLIF(prior_total_assets, 0)
+        AS asset_growth_pct,
+
     total_equity,
-    equity_growth_pct,
+
+    (
+        total_equity - prior_total_equity
+    ) / NULLIF(prior_total_equity, 0)
+        AS equity_growth_pct,
+
     net_income,
-    asset_change
+
+    total_assets - prior_total_assets
+        AS asset_change
 
 FROM with_changes
 

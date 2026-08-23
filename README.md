@@ -6,7 +6,7 @@ This project builds a small analytical data warehouse from publicly available **
 
 The project demonstrates an end-to-end data engineering and analytics workflow:
 
-```text
+
 FFIEC Central Data Repository
             ↓
       Python ingestion
@@ -18,9 +18,9 @@ FFIEC Central Data Repository
    Analytical fact table
             ↓
       SQL analysis
-```
 
-The pipeline is designed to be **period-agnostic**. A user supplies a Call Report quarter-end date, and the pipeline automatically loads that quarter plus the three preceding quarters.
+
+The pipeline is designed to be period-agnostic. A user supplies a Call Report quarter-end date, and the pipeline automatically loads that quarter plus the three preceding quarters.
 
 For example:
 
@@ -30,16 +30,15 @@ python python/pipeline.py 2025-06-30
 
 automatically creates a four-quarter window:
 
-```text
+
 2024-09-30
 2024-12-31
 2025-03-31
 2025-06-30
-```
+
 
 The same workflow can be used with other supported FFIEC quarter-end dates.
 
----
 
 ## 2. Project Goals
 
@@ -280,25 +279,29 @@ ERROR=0
 
 ---
 
-## 6.7. Running the Analysis
+## 7. Running the Analysis
 
-The SQL files under:
+The SQL files under `sql/analysis/` are standalone, read-only analytical queries. They run against the PostgreSQL warehouse and do not modify the database.
 
-```text
-sql/analysis/
+Before running the analysis commands, load the PostgreSQL environment variables from `.env` into your shell:
+
+```bash
+set -a
+source .env
+set +a
 ```
 
-are standalone, read-only analytical queries.
-
-They query the analytical warehouse directly and do not modify the database.
+The available analyses are described below.
 
 ### 7.1 Quarterly Summary
 
 Run:
 
 ```bash
-docker compose exec -T postgres psql -d "$POSTGRES_DB" \
-  -f /app/sql/analysis/quarterly_summary.sql
+docker exec -i ffiec-postgres psql \
+  -U "$POSTGRES_USER" \
+  -d "$POSTGRES_DB" \
+  < sql/analysis/quarterly_summary.sql
 ```
 
 This provides a quarter-by-quarter summary of:
@@ -309,37 +312,41 @@ This provides a quarter-by-quarter summary of:
 * Aggregate equity
 * Aggregate reported net income
 
-> The exact `docker compose exec` path may need to be adjusted if the repository is not mounted into the PostgreSQL container. Alternatively, open a PostgreSQL session and paste the contents of the SQL file directly.
+The results cover the reporting periods currently loaded into `analytics.fct_bank_financials`.
 
 ### 7.2 Latest-Period Asset Growth
 
-Run the SQL file against the PostgreSQL database:
+Run:
 
 ```bash
-docker compose exec -T postgres psql -d "$POSTGRES_DB" \
-  -f /app/sql/analysis/asset_growth_latest_period.sql
+docker exec -i ffiec-postgres psql \
+  -U "$POSTGRES_USER" \
+  -d "$POSTGRES_DB" \
+  < sql/analysis/asset_growth_latest_period.sql
 ```
 
 This compares the latest loaded reporting period with the immediately preceding reporting period and calculates asset growth.
 
-The query dynamically determines the latest reporting date rather than hard-coding a specific year or quarter.
+The query determines the latest available reporting date dynamically, so it does not depend on a specific year or quarter.
 
 ### 7.3 Top Five Latest-Quarter Four-Quarter Trend
 
 Run:
 
 ```bash
-docker compose exec -T postgres psql -d "$POSTGRES_DB" \
-  -f /app/sql/analysis/top_5_latest_quarter_four_quarter_trends.sql
+docker exec -i ffiec-postgres psql \
+  -U "$POSTGRES_USER" \
+  -d "$POSTGRES_DB" \
+  < sql/analysis/top_5_latest_quarter_four_quarter_trends.sql
 ```
 
 This analysis:
 
 1. Identifies the five largest institutions by total assets in the latest loaded quarter.
-2. Selects those same five institutions.
-3. Follows them across the latest four reporting periods.
-4. Calculates asset growth and equity growth.
-
+2. Selects those same five institutions as the analysis cohort.
+3. Follows the cohort across the latest four reporting periods.
+4. Calculates quarter-over-quarter asset and equity growth.
+5. Reports net income and absolute asset changes.
 
 The output contains:
 
@@ -354,9 +361,54 @@ net_income
 asset_change
 ```
 
-Because the query uses the latest reporting period dynamically, it is not tied to a specific year.
+Because the analysis dynamically identifies the latest reporting period, it is not tied to a specific calendar year.
 
----
+### 7.4 Top-Five Asset Concentration
+
+Run:
+
+```bash
+docker exec -i ffiec-postgres psql \
+  -U "$POSTGRES_USER" \
+  -d "$POSTGRES_DB" \
+  < sql/analysis/top_5_asset_concentration.sql
+```
+
+This is the primary analytical finding for the project.
+
+The analysis:
+
+1. Identifies the five largest institutions by total assets in the latest loaded quarter.
+2. Holds that five-bank cohort constant across the latest four reporting periods.
+3. Calculates total assets held by those five institutions.
+4. Calculates total reported assets across the analytical population.
+5. Calculates the five-bank share of total reported assets.
+6. Measures the quarter-over-quarter change in that concentration.
+
+The resulting output includes:
+
+```text
+report_date
+top_5_assets
+total_banking_assets
+top_5_asset_share_pct
+quarter_change_pct_points
+```
+
+This analysis is intended to answer:
+
+> **How concentrated are reported banking assets among the five largest institutions, and how has that concentration changed over the latest four quarters?**
+
+For the current loaded data, the five largest institutions as of the latest reporting period are:
+
+* JPMorgan Chase Bank, N.A.
+* Bank of America, N.A.
+* Citibank, N.A.
+* Wells Fargo Bank, N.A.
+* Goldman Sachs Bank USA
+
+The analysis is fully dynamic and will automatically use a different five-bank cohort if a different reporting window is loaded.
+
 
 ## 8. Warehouse Design
 
@@ -431,7 +483,6 @@ total_assets
 total_liabilities
 total_equity
 net_income
-roa
 ```
 
 This allows multiple reporting periods for the same bank to coexist in one analytical table.
@@ -565,55 +616,8 @@ It is designed to demonstrate:
 * Warehouse grain design
 * Longitudinal analysis
 
-It is not intended to reproduce every FFIEC Call Report field or every available reporting schedule.
-
 Call Report financial amounts are reported according to the units and reporting conventions of the source schedules. Selected monetary fields are converted to dollars in the dbt staging layer.
 
 Income-statement values should be interpreted according to Call Report reporting conventions rather than automatically assumed to represent an isolated quarterly income statement.
 
 ---
-
-## 15. Future Improvements
-
-Potential future extensions include:
-
-* Additional Call Report schedules
-* Additional institution classification dimensions
-* Additional profitability and capital metrics
-* Incremental dbt models
-* Automated orchestration
-* CI/CD data-quality checks
-* Dashboarding
-* Longer historical analysis
-* Cloud deployment
-* Additional financial risk indicators
-
----
-
-## 16. Project Takeaway
-
-This project demonstrates a complete analytical data workflow:
-
-```text
-FFIEC Public Data
-       ↓
-Python Ingestion
-       ↓
-PostgreSQL Raw Layer
-       ↓
-dbt Staging
-       ↓
-Analytical Fact Table
-       ↓
-Data Quality Tests
-       ↓
-Reusable SQL Analysis
-```
-
-The ingestion pipeline is parameterized by reporting period, while the analytical warehouse is designed around the grain:
-
-```text
-bank_id + report_date
-```
-
-This allows the same project to be reused for different FFIEC quarter-end periods without changing the underlying Python, dbt, or analytical SQL logic.
