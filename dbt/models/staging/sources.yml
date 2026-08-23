@@ -1,0 +1,16 @@
+version: 2
+
+sources:
+  - name: ffiec_raw
+    description: "Raw FFIEC Call Report data loaded by the Python ingestion pipeline."
+    schema: raw
+
+    tables:
+      - name: rc
+        description: "Call Report Schedule RC balance-sheet data."
+
+      - name: por
+        description: "FFIEC Panel of Reporters institution information."
+
+      - name: ri
+        description: "Call Report Schedule RI income-statement data."

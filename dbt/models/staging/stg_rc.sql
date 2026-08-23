@@ -9,4 +9,4 @@ SELECT
 
     NULLIF(rcfd3210, '')::numeric * 1000 AS total_equity
 
-FROM raw.rc
+FROM {{ source('ffiec_raw', 'rc') }}

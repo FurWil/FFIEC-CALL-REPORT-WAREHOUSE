@@ -15,4 +15,4 @@ SELECT
 
     financial_institution_zip_code AS zip_code
 
-FROM raw.por
+FROM {{ source('ffiec_raw', 'por') }}

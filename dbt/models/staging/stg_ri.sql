@@ -5,4 +5,4 @@ SELECT
 
     NULLIF(riad4340, '')::numeric * 1000 AS net_income
 
-FROM raw.ridocker exec -it ffiec-postgres psql -U furwil -d call_reports
+FROM {{ source('ffiec_raw', 'ri') }}
