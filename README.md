@@ -224,11 +224,13 @@ Update the PostgreSQL settings in `.env`.
 
 The repository uses `.env.example` so that another user can provide their own local database configuration without exposing credentials.
 
-### 6.3 Start PostgreSQL
+### 6.3 Start PostgreSQL with Docker
+
+Make sure Docker Desktop is running, then run:
 
 ```bash
 docker compose up -d
-```
+
 
 Verify the container is running:
 
