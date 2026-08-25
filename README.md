@@ -187,6 +187,22 @@ The exact four-quarter window changes automatically based on the date supplied.
 
 ## 6. Reproducing the Pipeline
 
+### Prerequisites
+
+Before setting up the project, install the following:
+
+- Git
+- Python 3.12+
+- Docker Desktop
+
+Docker Desktop provides the PostgreSQL environment used by the project.
+
+After installing Docker Desktop, start Docker Desktop and verify that
+the Docker Engine is running:
+
+```bash
+docker info
+
 ### 6.1 Clone the Repository
 
 ```bash
