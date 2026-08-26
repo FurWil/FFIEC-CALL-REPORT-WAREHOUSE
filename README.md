@@ -230,7 +230,7 @@ Make sure Docker Desktop is running, then run:
 
 ```bash
 docker compose up -d
-
+```
 
 Verify the container is running:
 
