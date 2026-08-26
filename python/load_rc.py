@@ -6,8 +6,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 
-
-load_dotenv()
+load_dotenv(override=True)
 
 
 def load_rc(reporting_period: str) -> None:
