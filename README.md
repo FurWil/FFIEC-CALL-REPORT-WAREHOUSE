@@ -193,7 +193,7 @@ Before setting up the project, install the following:
 
 - Git
 - Python 3.12+
-- Docker Desktop
+- Docker with WSL 2 installed
 
 Docker Desktop provides the PostgreSQL environment used by the project.
 
