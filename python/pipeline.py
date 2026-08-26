@@ -3,7 +3,16 @@ import sys
 from datetime import date, datetime
 
 import psycopg
+from pathlib import Path
 from dotenv import load_dotenv
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+ENV_FILE = PROJECT_ROOT / ".env"
+
+load_dotenv(
+    dotenv_path=ENV_FILE,
+    override=True
+)
 
 from download import download_call_report
 from extract import extract_call_report
@@ -11,7 +20,6 @@ from load_rc import load_rc
 from load_por import load_por
 from load_ri import load_ri
 
-load_dotenv(override=True)
 
 QUARTER_END_MONTHS = {
     3: 31,
