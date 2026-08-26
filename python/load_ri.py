@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 
 
-load_dotenv()
+load_dotenv(override=True)
 
 
 def load_ri(reporting_period: str) -> None:
