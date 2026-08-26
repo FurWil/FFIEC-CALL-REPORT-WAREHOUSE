@@ -3,4 +3,4 @@ psycopg[binary]
 python-dotenv
 sqlalchemy
 pandas
-dbt-postgres
+dbt-postgres==1.11.0
