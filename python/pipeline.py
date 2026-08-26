@@ -11,9 +11,7 @@ from load_rc import load_rc
 from load_por import load_por
 from load_ri import load_ri
 
-
-load_dotenv()
-
+load_dotenv(override=True)
 
 QUARTER_END_MONTHS = {
     3: 31,
