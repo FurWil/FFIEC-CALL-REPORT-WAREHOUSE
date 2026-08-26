@@ -429,6 +429,32 @@ period and then held constant across all four quarters. This allows
 the analysis to measure changes in concentration without changing the
 composition of the comparison group.
 
+### 7.5 Aggregate Liability-to-Asset Ratio
+
+
+Run:
+
+```bash
+docker exec -i ffiec-postgres psql \
+  -U "$POSTGRES_USER" \
+  -d "$POSTGRES_DB" \
+  < sql/analysis/aggregate_liability_to_asset_ratio.sql
+
+This calculates the aggregate liability-to-asset ratio across all
+institutions for each of the four most recent reporting periods loaded
+into the warehouse.
+
+The ratio is calculated as:
+
+Liability-to-Asset Ratio = Total Liabilities / Total Assets
+
+The analysis dynamically selects the latest four reporting periods, so
+it is not tied to a specific year or quarter.
+
+Total liabilities are used rather than a narrower definition of debt
+because the analytical warehouse currently models total liabilities
+from Schedule RC.
+
 ## 8. Warehouse Design
 
 ### Raw Layer
