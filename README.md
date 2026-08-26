@@ -387,7 +387,7 @@ asset_change
 
 Because the analysis dynamically identifies the latest reporting period, it is not tied to a specific calendar year.
 
-### 7.4 Top-Five Asset Concentration
+### 7.4 Top-Ten Asset Concentration
 
 Run:
 
@@ -395,44 +395,39 @@ Run:
 docker exec -i ffiec-postgres psql \
   -U "$POSTGRES_USER" \
   -d "$POSTGRES_DB" \
-  < sql/analysis/top_5_asset_concentration.sql
-```
+  < sql/analysis/top_10_asset_concentration.sql
 
 This is the primary analytical finding for the project.
 
 The analysis:
 
-1. Identifies the five largest institutions by total assets in the latest loaded quarter.
-2. Holds that five-bank cohort constant across the latest four reporting periods.
-3. Calculates total assets held by those five institutions.
-4. Calculates total reported assets across the analytical population.
-5. Calculates the five-bank share of total reported assets.
-6. Measures the quarter-over-quarter change in that concentration.
+Identifies the ten largest institutions by total assets in the latest loaded quarter.
+Holds that ten-bank cohort constant across the latest four reporting periods.
+Calculates the total assets held by those institutions.
+Calculates total reported assets across the analytical population.
+Calculates the share of reported assets held by the ten largest institutions.
+Measures the quarter-over-quarter change in that concentration.
 
-The resulting output includes:
+The resulting output contains:
+
 
 ```text
 report_date
-top_5_assets
+top_10_bank_names
+top_10_assets
 total_banking_assets
-top_5_asset_share_pct
+top_10_asset_share_pct
 quarter_change_pct_points
 ```
 
 This analysis is intended to answer:
 
-> **How concentrated are reported banking assets among the five largest institutions, and how has that concentration changed over the latest four quarters?**
+> **How concentrated are reported banking assets among the ten largest institutions, and how has that concentration changed over the latest four quarters?**
 
-For the current loaded data, the five largest institutions as of the latest reporting period are:
-
-* JPMorgan Chase Bank, N.A.
-* Bank of America, N.A.
-* Citibank, N.A.
-* Wells Fargo Bank, N.A.
-* Goldman Sachs Bank USA
-
-The analysis is fully dynamic and will automatically use a different five-bank cohort if a different reporting window is loaded.
-
+The ten institutions are selected using the latest loaded reporting
+period and then held constant across all four quarters. This allows
+the analysis to measure changes in concentration without changing the
+composition of the comparison group.
 
 ## 8. Warehouse Design
 
