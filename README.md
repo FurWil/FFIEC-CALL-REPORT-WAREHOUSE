@@ -301,6 +301,12 @@ ERROR=0
 
 The SQL files under `sql/analysis/` are standalone, read-only analytical queries. They run against the PostgreSQL warehouse and do not modify the database.
 
+To move back into the FFIEC-CALL-REPORT-WAREHOUSE directory run the following command:
+
+```bash
+cd ..
+```
+
 Before running the analysis commands, load the PostgreSQL environment variables from `.env` into your shell:
 
 ```bash
